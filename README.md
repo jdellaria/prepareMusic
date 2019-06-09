@@ -19,7 +19,7 @@ prepareMusic
 
  -f -> Force Artist and Album Name of the MP3 files in the MP3StagingDirectory
  
- -y -> Force Year of the MP3 files in the MP3StagingDirectory
+ -y #### -> Force Year of the MP3 files in the MP3StagingDirectory
  
  -l -> Load albums from the staging directory into MP3MusicLibraryDirectory
  
