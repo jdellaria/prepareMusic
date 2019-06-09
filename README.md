@@ -16,6 +16,7 @@ sudo apt install ffmpeg // for extracting cover image
 
 
 prepareMusic
+
  -f -> Force Artist and Album Name of the MP3 files in the MP3StagingDirectory
  
  -y -> Force Year of the MP3 files in the MP3StagingDirectory
