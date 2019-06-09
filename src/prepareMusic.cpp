@@ -44,6 +44,7 @@ typedef enum duplicateActions {
 	ACTION_FORCE,
 	ACTION_YEAR,
 	ACTION_LOAD,
+	ACTION_CHECK
 } Action;
 
 Action myAction = ACTION_STAGE;
@@ -61,12 +62,16 @@ void doCreatFileNameFolderStructure(char const* directoyEntry, int directoyEntry
 void doForceArtistAlbumName(char const* directoyEntry, int directoyEntryType);
 void doForceYear(char const * directoyEntry, int directoyEntryType);
 void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType);
+void doCheckForTagErrors(char const * directoyEntry, int directoyEntryType);
+
+int checkForTagErrors(audioTags myTags, string sourceFile);
 
 //prepareMusic
-// -f -> Force Artist and Album Name
-// -y -> Force Year
-// -l -> Load albums into system
-// no switches simply places the file into the creates the filename and folder structure
+//-f -> Force Artist and Album Name of the MP3 files in the MP3StagingDirectory
+//-y -> Force Year of the MP3 files in the MP3StagingDirectory
+//-l -> Load albums from the staging directory into MP3MusicLibraryDirectory
+//-c -> Check for errors in the MP3StagingDirectory
+//no switches simply places the file from MP3OriginalDirectory into MP3StagingDirectory creates the filename and folder structure
 
 //doForceYear
 //doForceArtistAlbumName
@@ -116,6 +121,10 @@ int main(int argc, char *argv[])
 	    {
 	    	myAction = ACTION_LOAD;
 	    }
+	    if(cmdOptionExists(argv, argv+argc, "-check")||cmdOptionExists(argv, argv+argc, "-c"))
+	    {
+	    	myAction = ACTION_CHECK;
+	    }
 
 	    char * STRForcedYear = getCmdOption(argv, argv + argc, "-y"); // get the Year and then force the year
 	    if (STRForcedYear)
@@ -128,27 +137,60 @@ int main(int argc, char *argv[])
 //		destinationDir = myConfig.MP3MusicLibraryDirectory;
 //	    doLoadAlbumsToDatabase("/home/jdellaria/Desktop/New Albums/Staging/Guns n Roses/Night of the Livid Redhead/1-01 Intro.mp3", DIRECTORYENTRYTYPE_REG);
 
+//	    myTags.get("/home/jdellaria/Desktop/New Albums/Original/Jeff Beck - Discography (1965-2009) 320kbps/Jeff Beck Group/1967-1971 - BBC Radio 1 Sessions/09 Got The Feeling.mp3");
+//	    checkForTagErrors(myTags, "/home/jdellaria/Desktop/New Albums/Original/Jeff Beck - Discography (1965-2009) 320kbps/Jeff Beck Group/1967-1971 - BBC Radio 1 Sessions/09 Got The Feeling.mp3");
+
 
 	    switch(myAction)
 	    {
     		case ACTION_STAGE:
  //   			std::cout << "ACTION_STAGE" << '\n';
-    			message = "Staging files to ";
+    			message = "ACTION_STAGE: Staging files to ";
     			message.append(myConfig.MP3OriginalDirectory);
     			myLog.print(logInformation, message);
     			myDirectory.Recurse(myConfig.MP3OriginalDirectory.c_str(), doCreatFileNameFolderStructure);
+	    	    if(myLog.numberOfErrors == 0)
+	    		{
+	    			message = "ACTION_STAGE: No Errors in original directory: ";
+	    			message.append(myConfig.MP3OriginalDirectory);
+	    			myLog.print(logInformation, message);
+	    		}
+	    		else
+	    		{
+	    			message = "ACTION_STAGE: There were ";
+	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
+	    			message.append(intbuffer);
+	    			message.append(" errors found in original directory:");
+	    			message.append(myConfig.MP3OriginalDirectory);
+	    			myLog.print(logWarning, message);
+	    		}
     		break;
 
 	    	case ACTION_FORCE:
 //	    		std::cout << "ACTION_FORCE" << '\n';
-    			message = "Forcing Album and Artist Name in folder ";
+    			message = "ACTION_FORCE: Forcing Album and Artist Name in folder ";
     			message.append(myConfig.MP3StagingDirectory);
     			myLog.print(logInformation, message);
 	    		myDirectory.Recurse(myConfig.MP3StagingDirectory.c_str(), doForceArtistAlbumName);
+	    	    if(myLog.numberOfErrors == 0)
+	    		{
+	    			message = "ACTION_FORCE: No Errors in staging directory: ";
+	    			message.append(myConfig.MP3StagingDirectory.c_str());
+	    			myLog.print(logInformation, message);
+	    		}
+	    		else
+	    		{
+	    			message = "ACTION_FORCE: There were ";
+	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
+	    			message.append(intbuffer);
+	    			message.append(" errors found in staging directory:");
+	    			message.append(myConfig.MP3StagingDirectory.c_str());
+	    			myLog.print(logWarning, message);
+	    		}
 	    		break;
 	    	case ACTION_YEAR:
 //	    		std::cout << "ACTION_YEAR" << '\n';
-    			message = "Forcing year ";
+    			message = "ACTION_YEAR: Forcing year ";
     			message.append(STRForcedYear);
     			message.append(" in folder ");
     			message.append(myConfig.MP3StagingDirectory);
@@ -156,8 +198,32 @@ int main(int argc, char *argv[])
 	    		myDirectory.Recurse(myConfig.MP3StagingDirectory.c_str(), doForceYear);
 	    		break;
 
+	    	case ACTION_CHECK:
+//	    		std::cout << "ACTION_YEAR" << '\n';
+    			message = "ACTION_CHECK Checking for Errors in directory: ";
+    			message.append(myConfig.MP3StagingDirectory);
+    			myLog.print(logInformation, message);
+	    		myDirectory.Recurse(myConfig.MP3StagingDirectory.c_str(), doCheckForTagErrors);
+
+	    	    if(myLog.numberOfErrors == 0)
+	    		{
+	    			message = "ACTION_CHECK: No Errors in staging directory: ";
+	    			message.append(myConfig.MP3StagingDirectory.c_str());
+	    			myLog.print(logInformation, message);
+	    		}
+	    		else
+	    		{
+	    			message = "There were ";
+	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
+	    			message.append(intbuffer);
+	    			message.append(" errors found in staging directory:");
+	    			message.append(myConfig.MP3StagingDirectory.c_str());
+	    			myLog.print(logWarning, message);
+	    		}
+	    		break;
+
 	    	case ACTION_LOAD:
-    			message = "Loading Albums from ";
+    			message = "ACTION_LOAD: Loading Albums from ";
     			message.append(myConfig.MP3StagingDirectory);
     			message.append(" into Database ");
     			myLog.print(logInformation, message);
@@ -171,14 +237,14 @@ int main(int argc, char *argv[])
 	    			myDB.CommitSongsToLibrary();
 
 	    			myDB.RemoveSongsFromPreSongLibrary();
-	    			message = "No Errors. Removing files and directories in: ";
+	    			message = "ACTION_LOAD: No Errors. Removing files and directories in: ";
 	    			message.append(destinationDir);
 	    			myLog.print(logInformation, message);
 	    			myDirectory.Recurse(myConfig.MP3StagingDirectory.c_str(), deleteDirectoryDo);
 	    		}
 	    		else
 	    		{
-	    			message = "There were ";
+	    			message = "ACTION_LOAD: There were ";
 	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
 	    			message.append(intbuffer);
 	    			message.append(" errors found.");
@@ -187,6 +253,7 @@ int main(int argc, char *argv[])
 
 	    		break;
 	    }
+
 }
 
 
@@ -204,6 +271,62 @@ void deleteDirectoryDo(char const* directoyEntry, int directoyEntryType)
 	}
 }
 
+
+
+void doCheckForTagErrors(char const * directoyEntry, int directoyEntryType)
+//doCheckForTagErrors
+//this Checks For Tag Errors of all the MP3 files in the folder
+
+{
+	string message;
+	audioTags myTags;
+
+	File myFile;
+	string fileName;
+	string destinationFileName = "none";
+	size_t found;
+	string sourceFile;
+	string tempString;
+
+
+	sourceFile = directoyEntry;
+
+	if (directoyEntryType == DIRECTORYENTRYTYPE_DIR)
+	{
+		newAlbum = 1; // New directory means new Album
+		gotCoverJPG = 0;
+//		cout << "recurseDo: directoyEntryType == DIRECTORYENTRYTYPE_DIR"  << endl;
+//		printf("New Album!!! %s\n", directoyEntry);
+	}
+
+	if(directoyEntryType == DIRECTORYENTRYTYPE_REG) // if it is a file and a duplicate... then remove
+	{
+
+
+		message.clear();
+		message.append(directoyEntry);
+		myLog.print(logDebug, message);
+
+
+		if (!isAppleDropping((char* const)fileName.c_str())) // Apple leaves files that begin with ._ and we need to forget about them.
+		{
+
+			if (isMP3((char* const)sourceFile.c_str()))
+			{
+
+				myTags.get((char*)sourceFile.c_str());
+				checkForTagErrors(myTags,(char*)sourceFile.c_str() );
+
+			}
+		}
+
+	}
+	if (myLog.numberOfErrors > 0)
+	{
+		message = "There were Errors ";
+		myLog.print(logWarning, message);
+	}
+}
 
 
 void doForceYear(char const * directoyEntry, int directoyEntryType)
@@ -387,36 +510,8 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 			if (isMP3((char* const)sourceFile.c_str()))
 			{
 				myTags.get((char*)sourceFile.c_str());
-				if (myTags.track == 0)
-				{
-					message = "No Track Information ";
-					message.append(sourceFile);
-					myLog.print(logError, message);
-				}
-				if (myTags.year == 0)
-				{
-					message = "No Year Information ";
-					message.append(sourceFile);
-					myLog.print(logError, message);
-				}
-				if (myTags.title.length() == 0)
-				{
-					message = "No Title Information ";
-					message.append(sourceFile);
-					myLog.print(logError, message);
-				}
-				if (myTags.album.length() == 0)
-				{
-					message = "No Album Information ";
-					message.append(sourceFile);
-					myLog.print(logError, message);
-				}
-				if (myTags.artist.length() == 0)
-				{
-					message = "No Artist Information ";
-					message.append(sourceFile);
-					myLog.print(logError, message);
-				}
+				checkForTagErrors(myTags, sourceFile);
+
 				found = sourceFile.find_last_of("/\\");
 				fileName = sourceFile.substr(found+1);
 				tempString = sourceFile.substr(0,found); // tempString has the directory name
@@ -525,6 +620,47 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 	}
 }
 
+int checkForTagErrors(audioTags mp3Tags, string mp3File)
+{
+	string message;
+	int returnValue = 0;
+	if (mp3Tags.track == 0)
+	{
+		returnValue = 1;
+		message = "No Track Information ";
+		message.append(mp3File);
+		myLog.print(logError, message);
+	}
+	if (mp3Tags.year == 0)
+	{
+		returnValue = 1;
+		message = "No Year Information ";
+		message.append(mp3File);
+		myLog.print(logError, message);
+	}
+	if (mp3Tags.title.length() == 0)
+	{
+		returnValue = 1;
+		message = "No Title Information ";
+		message.append(mp3File);
+		myLog.print(logError, message);
+	}
+	if (mp3Tags.album.length() == 0)
+	{
+		returnValue = 1;
+		message = "No Album Information ";
+		message.append(mp3File);
+		myLog.print(logError, message);
+	}
+	if (mp3Tags.artist.length() == 0)
+	{
+		returnValue = 1;
+		message = "No Artist Information ";
+		message.append(mp3File);
+		myLog.print(logError, message);
+	}
+	return(returnValue);
+}
 
 
 void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType)

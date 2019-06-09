@@ -13,3 +13,17 @@ sudo apt-get install libtag1-dev
 sudo apt-get install libmysql++-dev
 
 sudo apt install ffmpeg // for extracting cover image
+
+	ACTION_STAGE = 0,
+	ACTION_FORCE,
+	ACTION_YEAR,
+	ACTION_LOAD,
+	ACTION_CHECK
+prepareMusic
+ -f -> Force Artist and Album Name of the MP3 files in the MP3StagingDirectory
+ -y -> Force Year of the MP3 files in the MP3StagingDirectory
+ -l -> Load albums from the staging directory into MP3MusicLibraryDirectory
+ -c -> Check for errors in the MP3StagingDirectory
+ no switches simply places the file from MP3OriginalDirectory into MP3StagingDirectory creates the filename and folder structure
+ 
+	
