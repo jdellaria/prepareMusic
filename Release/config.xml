@@ -5,6 +5,6 @@
 <logprintscreen>true</logprintscreen>
 <logprintfile>true</logprintfile>
 <logprinttime>true</logprinttime>
-<MP3OriginalDirectory>/home/jdellaria/Desktop/New Albums/Original/</MP3OriginalDirectory>
-<MP3StagingDirectory>/home/jdellaria/Desktop/New Albums/Staging/</MP3StagingDirectory>
-<MP3MusicLibraryDirectory>/home/jdellaria/Desktop/Music/</MP3MusicLibraryDirectory>
+<MP3OriginalDirectory>/Shared/New Albums/Original/</MP3OriginalDirectory>
+<MP3StagingDirectory>/Shared/New Albums/Staging/</MP3StagingDirectory>
+<MP3MusicLibraryDirectory>/RAID/Music/Album Music/</MP3MusicLibraryDirectory>
