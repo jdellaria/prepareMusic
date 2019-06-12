@@ -44,7 +44,7 @@ all: prepareMusic
 prepareMusic: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/usr/lib/mysql -L"/home/jdellaria/workspace/DLiriumLib/Release" -L/usr/lib -o "prepareMusic" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/usr/lib/mysql -L"/home/jdellaria/eclipse-workspace/DLiriumLib/Release" -L/usr/lib -o "prepareMusic" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -54,6 +54,5 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
-.SECONDARY:
 
 -include ../makefile.targets

@@ -495,7 +495,7 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 	if(directoyEntryType == DIRECTORYENTRYTYPE_REG) // if it is a file and a duplicate... then remove
 	{
 
-
+		int returnValue = 0;
 		AlbumName = "UnknownAlbum";
 		ArtistName = "UnknownArtist";
 
@@ -510,104 +510,105 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 			if (isMP3((char* const)sourceFile.c_str()))
 			{
 				myTags.get((char*)sourceFile.c_str());
-				checkForTagErrors(myTags, sourceFile);
-
-				found = sourceFile.find_last_of("/\\");
-				fileName = sourceFile.substr(found+1);
-				tempString = sourceFile.substr(0,found); // tempString has the directory name
-//				std::string s = std::to_string(myTags.track);
-//				auto s = std::to_string(42);
-
-				destinationFileName = tempString + "/";
-				if (myTags.disk > 0)
+				returnValue = checkForTagErrors(myTags, sourceFile);
+				if (returnValue == 0) // if success.. no errors
 				{
-					sprintf(ibuffer, "%d",  myTags.disk);
-//					destinationFileName.append("/");
-					destinationFileName.append(ibuffer);
-					destinationFileName.append("-");
-				}
+					found = sourceFile.find_last_of("/\\");
+					fileName = sourceFile.substr(found+1);
+					tempString = sourceFile.substr(0,found); // tempString has the directory name
+	//				std::string s = std::to_string(myTags.track);
+	//				auto s = std::to_string(42);
 
-				sprintf(ibuffer, "%d",  myTags.track);
-
-				if (myTags.track < 10)
-				{
-					destinationFileName.append("0");
-//					destinationFileName = tempString + "/0";
-				}
-				else
-				{
-//					destinationFileName.append("/");
-//					destinationFileName = tempString + "/";
-				}
-				destinationFileName.append(ibuffer);
-				destinationFileName.append(" ");
-				destinationFileName.append( myTags.title );
-				destinationFileName.append(".mp3");
-
-				cout << "destinationFileName: " << destinationFileName << endl;
-				myFile.rename(sourceFile.c_str(), destinationFileName.c_str() );
-
-				if (myTags.album.length() > 0)
-				{
-					AlbumName = myTags.album;
-				}
-				if (myTags.artist.length() > 0)
-				{
-					ArtistName = myTags.artist;
-				}
-
-				sourceFile = destinationFileName;
-
-				found = sourceFile.find_last_of("/\\");
-				fileName = sourceFile.substr(found+1);
-				tempString = sourceFile.substr(0,found);
-
-/*				found = tempString.find_last_of("/\\");
-				AlbumName = tempString.substr(found+1);
-				tempString = tempString.substr(0,found);
-
-				found = tempString.find_last_of("/\\");
-				ArtistName = tempString.substr(found+1);
-				tempString = tempString.substr(0,found);
-				;*/
-				destinationFileName = destinationDir + ArtistName + "/" + AlbumName + "/" + fileName;
-
-//				cout << "destinationFileName: " << destinationFileName << endl;
-//				cout << "sourceFile: " << sourceFile << endl;
-
-				returnValue = myFile.copy(sourceFile,destinationFileName);
-				if (returnValue == 0) // if success
-				{
-					string directoryName;
-					string albumImageName;
-					File myCoverImageFile;
-					message = "Copying file:";
-					message.append(sourceFile);
-					message.append(" to -> ");
-					message.append(destinationFileName);
-					myLog.print(logInformation, message);
-					myFile.remove( sourceFile.c_str()  );
-					//No we can creat the cover.jpg if it is not there.
-					found = destinationFileName.find_last_of("/\\"); // Get the folder name that the file resides in
-					directoryName = destinationFileName.substr(0,found+1);
-					albumImageName = directoryName + "cover.jpg";
-					if(myCoverImageFile.exist(albumImageName.c_str()) == 0)
+					destinationFileName = tempString + "/";
+					if (myTags.disk > 0)
 					{
-						myTags.getImage(destinationFileName.c_str(), albumImageName.c_str());
-//						cout <<"Writing Album cover for "  << albumImageName << endl;
+						sprintf(ibuffer, "%d",  myTags.disk);
+	//					destinationFileName.append("/");
+						destinationFileName.append(ibuffer);
+						destinationFileName.append("-");
+					}
+
+					sprintf(ibuffer, "%d",  myTags.track);
+
+					if (myTags.track < 10)
+					{
+						destinationFileName.append("0");
+	//					destinationFileName = tempString + "/0";
+					}
+					else
+					{
+	//					destinationFileName.append("/");
+	//					destinationFileName = tempString + "/";
+					}
+					destinationFileName.append(ibuffer);
+					destinationFileName.append(" ");
+					destinationFileName.append( myTags.title );
+					destinationFileName.append(".mp3");
+
+					cout << "destinationFileName: " << destinationFileName << endl;
+					myFile.rename(sourceFile.c_str(), destinationFileName.c_str() );
+
+					if (myTags.album.length() > 0)
+					{
+						AlbumName = myTags.album;
+					}
+					if (myTags.artist.length() > 0)
+					{
+						ArtistName = myTags.artist;
+					}
+
+					sourceFile = destinationFileName;
+
+					found = sourceFile.find_last_of("/\\");
+					fileName = sourceFile.substr(found+1);
+					tempString = sourceFile.substr(0,found);
+
+	/*				found = tempString.find_last_of("/\\");
+					AlbumName = tempString.substr(found+1);
+					tempString = tempString.substr(0,found);
+
+					found = tempString.find_last_of("/\\");
+					ArtistName = tempString.substr(found+1);
+					tempString = tempString.substr(0,found);
+					;*/
+					destinationFileName = destinationDir + ArtistName + "/" + AlbumName + "/" + fileName;
+
+	//				cout << "destinationFileName: " << destinationFileName << endl;
+	//				cout << "sourceFile: " << sourceFile << endl;
+
+					returnValue = myFile.copy(sourceFile,destinationFileName);
+					if (returnValue == 0) // if success
+					{
+						string directoryName;
+						string albumImageName;
+						File myCoverImageFile;
+						message = "Copying file:";
+						message.append(sourceFile);
+						message.append(" to -> ");
+						message.append(destinationFileName);
+						myLog.print(logInformation, message);
+						myFile.remove( sourceFile.c_str()  );
+						//No we can creat the cover.jpg if it is not there.
+						found = destinationFileName.find_last_of("/\\"); // Get the folder name that the file resides in
+						directoryName = destinationFileName.substr(0,found+1);
+						albumImageName = directoryName + "cover.jpg";
+						if(myCoverImageFile.exist(albumImageName.c_str()) == 0)
+						{
+							myTags.getImage(destinationFileName.c_str(), albumImageName.c_str());
+	//						cout <<"Writing Album cover for "  << albumImageName << endl;
+						}
+					}
+					else
+					{
+						message = "Error copying file: ";
+						message.append(myFile.errorMessageBuffer);
+						message.append(": ");
+						message.append(sourceFile);
+						message.append(" to -> ");
+						message.append(destinationFileName);
+						myLog.print(logError, message);
 					}
 				}
-				else
-				{
-					message = "Error copying file: ";
-					message.append(myFile.errorMessageBuffer);
-					message.append(": ");
-					message.append(sourceFile);
-					message.append(" to -> ");
-					message.append(destinationFileName);
-					myLog.print(logError, message);
-				}
-
 
 			}
 		}
