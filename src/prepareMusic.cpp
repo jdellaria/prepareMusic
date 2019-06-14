@@ -57,6 +57,10 @@ int isJPG(char* const fileName);
 int addSongToDB(char* const fileName, char* const thumbName, char* const grouping);
 int configApp();
 
+
+vector <string> TokenizeString(string line, char tokenSeparator);
+int StringToInt (std::string line);
+
 void deleteDirectoryDo(char const* directoyEntry, int directoyEntryType);
 void doCreatFileNameFolderStructure(char const* directoyEntry, int directoyEntryType);
 void doForceArtistAlbumName(char const* directoyEntry, int directoyEntryType);
@@ -64,7 +68,7 @@ void doForceYear(char const * directoyEntry, int directoyEntryType);
 void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType);
 void doCheckForTagErrors(char const * directoyEntry, int directoyEntryType);
 
-int checkForTagErrors(audioTags myTags, string sourceFile);
+int checkForTagErrors(audioTags *myTags, string sourceFile);
 
 //prepareMusic
 //-f -> Force Artist and Album Name of the MP3 files in the MP3StagingDirectory
@@ -137,7 +141,11 @@ int main(int argc, char *argv[])
 //		destinationDir = myConfig.MP3MusicLibraryDirectory;
 //	    doLoadAlbumsToDatabase("/home/jdellaria/Desktop/New Albums/Staging/Guns n Roses/Night of the Livid Redhead/1-01 Intro.mp3", DIRECTORYENTRYTYPE_REG);
 
-//	    myTags.get("/home/jdellaria/Desktop/New Albums/Original/Jeff Beck - Discography (1965-2009) 320kbps/Jeff Beck Group/1967-1971 - BBC Radio 1 Sessions/09 Got The Feeling.mp3");
+//	    myTags.get("/Shared/New Albums/Staging/Everclear/UnknownAlbum/01 Electra Made Me Blind.mp3");
+//	    std::cout << "myTags.track: " << myTags.track << '\n';
+//	    std::cout << "myTags.album: " << myTags.artist << '\n';
+//	    std::cout << "myTags.album: " << myTags.album << '\n';
+
 //	    checkForTagErrors(myTags, "/home/jdellaria/Desktop/New Albums/Original/Jeff Beck - Discography (1965-2009) 320kbps/Jeff Beck Group/1967-1971 - BBC Radio 1 Sessions/09 Got The Feeling.mp3");
 
 
@@ -257,6 +265,53 @@ int main(int argc, char *argv[])
 }
 
 
+int mainIsDigitTest()
+{
+	string myLine = "Browned Eyed Girl (Live).mp3";
+	vector <string> myTokens;
+	int myInt;
+
+	myTokens = TokenizeString(myLine, ' ');
+    // Printing the token vector
+    for(int i = 0; i < myTokens.size(); i++)
+        cout << myTokens[i] << '\n';
+    myInt = StringToInt(myTokens[0]);
+    cout << "myInt " << myInt << '\n';
+}
+
+int StringToInt (std::string line)
+{
+	  std::string::size_type sz;   // alias of size_t
+	  int i_dec = -1;
+	  if (isdigit(line[0]))
+	  {
+		  i_dec = std::stoi (line,&sz);
+//		  std::cout << line << ": " << i_dec << " and [" << line.substr(sz) << "]\n";
+	  }
+
+	  return i_dec;
+}
+
+vector <string> TokenizeString(string line, char tokenSeparator)
+{
+    // Vector of string to save tokens
+    vector <string> tokens;
+
+    // stringstream class check1
+    stringstream check1(line);
+
+    string intermediate;
+
+    // Tokenizing w.r.t. space ' '
+    while(getline(check1, intermediate, tokenSeparator))
+    {
+        tokens.push_back(intermediate);
+    }
+
+    return tokens;
+}
+
+
 void deleteDirectoryDo(char const* directoyEntry, int directoyEntryType)
 {
 	Directory myDirectory;
@@ -315,7 +370,7 @@ void doCheckForTagErrors(char const * directoyEntry, int directoyEntryType)
 			{
 
 				myTags.get((char*)sourceFile.c_str());
-				checkForTagErrors(myTags,(char*)sourceFile.c_str() );
+				checkForTagErrors(&myTags,(char*)sourceFile.c_str() );
 
 			}
 		}
@@ -477,10 +532,10 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 	string tempString;
 	string AlbumName;
 	string ArtistName;
-	char albumIDString[10];
+
 	char ibuffer [33];
 
-	int returnValue;
+
 
 	sourceFile = directoyEntry;
 
@@ -510,7 +565,7 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 			if (isMP3((char* const)sourceFile.c_str()))
 			{
 				myTags.get((char*)sourceFile.c_str());
-				returnValue = checkForTagErrors(myTags, sourceFile);
+				returnValue = checkForTagErrors(&myTags, sourceFile);
 				if (returnValue == 0) // if success.. no errors
 				{
 					found = sourceFile.find_last_of("/\\");
@@ -621,41 +676,85 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 	}
 }
 
-int checkForTagErrors(audioTags mp3Tags, string mp3File)
+int checkForTagErrors(audioTags *mp3Tags, string mp3File)
 {
 	string message;
 	int returnValue = 0;
-	if (mp3Tags.track == 0)
+	vector <string> myTokens;
+	int myInt;
+	size_t found;
+	string fileName;
+	string tempString;
+	string AlbumName;
+	string ArtistName;
+
+	found = mp3File.find_last_of("/\\");
+	fileName = mp3File.substr(found+1);
+	tempString = mp3File.substr(0,found);
+
+	found = tempString.find_last_of("/\\");
+	AlbumName = tempString.substr(found+1);
+	tempString = tempString.substr(0,found);
+
+	found = tempString.find_last_of("/\\");
+	ArtistName = tempString.substr(found+1);
+	tempString = tempString.substr(0,found);
+
+	message = "checkForTagErrors: fileName: ";
+	message.append(fileName);
+	message.append(" AlbumName: ");
+	message.append(AlbumName);
+	message.append(" ArtistName: ");
+	message.append(ArtistName);
+	myLog.print(logDebug, message);
+
+	if (mp3Tags->track == 0)
 	{
-		returnValue = 1;
-		message = "No Track Information ";
-		message.append(mp3File);
-		myLog.print(logError, message);
+
+		myTokens = TokenizeString(fileName, ' ');
+		myInt = StringToInt(myTokens[0]);
+		if (myInt == -1) // er have an error
+		{
+			returnValue = 1;
+			message = "No Track Information ";
+			message.append(mp3File);
+			myLog.print(logError, message);
+		}
+		else // other wise, this is the track number
+		{
+			mp3Tags->track = myInt;
+			mp3Tags->set(mp3File.c_str());
+		}
+
 	}
-	if (mp3Tags.year == 0)
+	if (mp3Tags->year == 0)
 	{
-		returnValue = 1;
+//		returnValue = 1; // just report error for year not found
 		message = "No Year Information ";
 		message.append(mp3File);
 		myLog.print(logError, message);
 	}
-	if (mp3Tags.title.length() == 0)
+	if (mp3Tags->title.length() == 0)
 	{
 		returnValue = 1;
 		message = "No Title Information ";
 		message.append(mp3File);
 		myLog.print(logError, message);
 	}
-	if (mp3Tags.album.length() == 0)
+	if (mp3Tags->album.length() == 0)
 	{
-		returnValue = 1;
+		mp3Tags->album = AlbumName; // Set album name to folder name
+		mp3Tags->set(mp3File.c_str());
+//		returnValue = 1;
 		message = "No Album Information ";
 		message.append(mp3File);
 		myLog.print(logError, message);
 	}
-	if (mp3Tags.artist.length() == 0)
+	if (mp3Tags->artist.length() == 0)
 	{
-		returnValue = 1;
+		mp3Tags->artist = ArtistName; // Set Artist name to folder name
+		mp3Tags->set(mp3File.c_str());
+//		returnValue = 1;
 		message = "No Artist Information ";
 		message.append(mp3File);
 		myLog.print(logError, message);

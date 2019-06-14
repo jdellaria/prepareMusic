@@ -192,7 +192,7 @@ int audioTags::set(const char *fileName)
 
 	TagLib::FileRef f(fileName);
 
-	cout << "id3v2Tags: get fileName: "  << fileName << endl;
+//	cout << "id3v2Tags: set fileName: "  << fileName << endl;
 	if(!f.isNull() && f.tag())
 	{
 
