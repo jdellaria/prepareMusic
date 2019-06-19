@@ -47,7 +47,7 @@ typedef enum duplicateActions {
 	ACTION_CHECK
 } Action;
 
-Action myAction = ACTION_STAGE;
+
 
 musicDB myDB;
 
@@ -67,9 +67,38 @@ void doForceArtistAlbumName(char const* directoyEntry, int directoyEntryType);
 void doForceYear(char const * directoyEntry, int directoyEntryType);
 void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType);
 void doCheckForTagErrors(char const * directoyEntry, int directoyEntryType);
-
+void removeForbiddenFileNameChar(string* s);
 int checkForTagErrors(audioTags *myTags, string sourceFile);
 
+#ifdef JON
+#include <string>
+#include <codecvt>
+#include <locale>
+
+string utf8_to_string(const char *utf8str, const locale& loc)
+{
+    // UTF-8 to wstring
+    wstring_convert<codecvt_utf8<wchar_t>> wconv;
+    wstring wstr = wconv.from_bytes(utf8str);
+    // wstring to string
+    vector<char> buf(wstr.size());
+    use_facet<ctype<wchar_t>>(loc).narrow(wstr.data(), wstr.data() + wstr.size(), '?', buf.data());
+    return string(buf.data(), buf.size());
+}
+
+int mainqwe(int argc, char* argv[])
+{
+    string ansi = "Ali Farka Touré & Toumani Diabeté";
+    char utf8txt[] = {(char)0xc3,(char) 0xa1, (char)0};
+
+    // I guess you want to use Windows-1252 encoding...
+//    ansi = utf8_to_string(utf8txt, locale(".1252"));
+	cout << "ansi: " << ansi << endl;
+	cout << "ansi: " << ansi << endl;
+    // Now do something with the string
+    return 0;
+}
+#endif
 //prepareMusic
 //-f -> Force Artist and Album Name of the MP3 files in the MP3StagingDirectory
 //-y -> Force Year of the MP3 files in the MP3StagingDirectory
@@ -100,6 +129,7 @@ int main(int argc, char *argv[])
 {
 	Directory myDirectory;
 	audioTags myTags;
+	Action myAction = ACTION_STAGE;
 
 	string message;
 	char intbuffer[20];
@@ -140,15 +170,15 @@ int main(int argc, char *argv[])
 
 //		destinationDir = myConfig.MP3MusicLibraryDirectory;
 //	    doLoadAlbumsToDatabase("/home/jdellaria/Desktop/New Albums/Staging/Guns n Roses/Night of the Livid Redhead/1-01 Intro.mp3", DIRECTORYENTRYTYPE_REG);
-
-//	    myTags.get("/Shared/New Albums/Staging/Everclear/UnknownAlbum/01 Electra Made Me Blind.mp3");
-//	    std::cout << "myTags.track: " << myTags.track << '\n';
-//	    std::cout << "myTags.album: " << myTags.artist << '\n';
-//	    std::cout << "myTags.album: " << myTags.album << '\n';
-
+/*
+	    myTags.get("/home/jdellaria/Desktop/Album Music/Original/Ali Farka Touré & Toumani Diabeté/In The Heart Of The Moon/01 Debe.mp3");
+	    std::cout << "myTags.track: " << myTags.track << '\n';
+	    std::cout << "myTags.album: " << myTags.artist << '\n';
+	    std::cout << "myTags.album: " << myTags.album << '\n';
+*/
 //	    checkForTagErrors(myTags, "/home/jdellaria/Desktop/New Albums/Original/Jeff Beck - Discography (1965-2009) 320kbps/Jeff Beck Group/1967-1971 - BBC Radio 1 Sessions/09 Got The Feeling.mp3");
 
-
+//#ifdef JON
 	    switch(myAction)
 	    {
     		case ACTION_STAGE:
@@ -163,15 +193,7 @@ int main(int argc, char *argv[])
 	    			message.append(myConfig.MP3OriginalDirectory);
 	    			myLog.print(logInformation, message);
 	    		}
-	    		else
-	    		{
-	    			message = "ACTION_STAGE: There were ";
-	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
-	    			message.append(intbuffer);
-	    			message.append(" errors found in original directory:");
-	    			message.append(myConfig.MP3OriginalDirectory);
-	    			myLog.print(logWarning, message);
-	    		}
+
     		break;
 
 	    	case ACTION_FORCE:
@@ -186,15 +208,7 @@ int main(int argc, char *argv[])
 	    			message.append(myConfig.MP3StagingDirectory.c_str());
 	    			myLog.print(logInformation, message);
 	    		}
-	    		else
-	    		{
-	    			message = "ACTION_FORCE: There were ";
-	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
-	    			message.append(intbuffer);
-	    			message.append(" errors found in staging directory:");
-	    			message.append(myConfig.MP3StagingDirectory.c_str());
-	    			myLog.print(logWarning, message);
-	    		}
+
 	    		break;
 	    	case ACTION_YEAR:
 //	    		std::cout << "ACTION_YEAR" << '\n';
@@ -219,15 +233,7 @@ int main(int argc, char *argv[])
 	    			message.append(myConfig.MP3StagingDirectory.c_str());
 	    			myLog.print(logInformation, message);
 	    		}
-	    		else
-	    		{
-	    			message = "There were ";
-	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
-	    			message.append(intbuffer);
-	    			message.append(" errors found in staging directory:");
-	    			message.append(myConfig.MP3StagingDirectory.c_str());
-	    			myLog.print(logWarning, message);
-	    		}
+
 	    		break;
 
 	    	case ACTION_LOAD:
@@ -250,20 +256,54 @@ int main(int argc, char *argv[])
 	    			myLog.print(logInformation, message);
 	    			myDirectory.Recurse(myConfig.MP3StagingDirectory.c_str(), deleteDirectoryDo);
 	    		}
-	    		else
-	    		{
-	    			message = "ACTION_LOAD: There were ";
-	    			sprintf(intbuffer,"%d", myLog.numberOfErrors);
-	    			message.append(intbuffer);
-	    			message.append(" errors found.");
-	    			myLog.print(logWarning, message);
-	    		}
 
 	    		break;
 	    }
+//#endif
+		message = "There were ";
+		sprintf(intbuffer,"%d", myLog.numberOfErrors);
+		message.append(intbuffer);
+		message.append(" errors found.");
+		myLog.print(logWarning, message);
 
 }
 
+
+int mainRemoveForbiddenCharacters()
+{
+    std::string str = "\"Book\":";
+    std::cout << str << std::endl;
+    removeForbiddenFileNameChar(&str);
+    std::cout << str << std::endl;
+    return 0;
+}
+
+
+static char ClearForbidden(char toCheck)
+{
+	const std::string forbiddenChars = "\\/:?\"<>|";
+    if(forbiddenChars.find(toCheck) != string::npos)
+    {
+         return '_';
+    }
+
+    return toCheck;
+}
+
+void removeForbiddenFileNameChar(string* s)
+{
+    string::iterator it;
+
+    std::transform(s->begin(), s->end(), s->begin(), ClearForbidden);
+/*    string illegalChars = "\\/:?\"<>|";
+    for (it = s->begin() ; it < s->end() ; ++it){
+        bool found = illegalChars.find(*it) != string::npos;
+        if(found){
+            *it = '_';
+        }
+    }*/
+
+}
 
 int mainIsDigitTest()
 {
@@ -376,11 +416,6 @@ void doCheckForTagErrors(char const * directoyEntry, int directoyEntryType)
 		}
 
 	}
-	if (myLog.numberOfErrors > 0)
-	{
-		message = "There were Errors ";
-		myLog.print(logWarning, message);
-	}
 }
 
 
@@ -431,11 +466,6 @@ void doForceYear(char const * directoyEntry, int directoyEntryType)
 			}
 		}
 
-	}
-	if (myLog.numberOfErrors > 0)
-	{
-		message = "There were Errors ";
-		myLog.print(logWarning, message);
 	}
 }
 
@@ -506,11 +536,7 @@ void doForceArtistAlbumName(char const * directoyEntry, int directoyEntryType)
 		}
 
 	}
-	if (myLog.numberOfErrors > 0)
-	{
-		message = "There were Errors ";
-		myLog.print(logWarning, message);
-	}
+
 }
 
 
@@ -558,6 +584,9 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 		message.append(directoyEntry);
 		myLog.print(logDebug, message);
 
+		found = sourceFile.find_last_of("/\\");
+		fileName = sourceFile.substr(found+1);
+		tempString = sourceFile.substr(0,found); // tempString has the directory name
 
 		if (!isAppleDropping((char* const)fileName.c_str())) // Apple leaves files thatnbegin with ._ and we need to forget about them.
 		{
@@ -568,9 +597,7 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 				returnValue = checkForTagErrors(&myTags, sourceFile);
 				if (returnValue == 0) // if success.. no errors
 				{
-					found = sourceFile.find_last_of("/\\");
-					fileName = sourceFile.substr(found+1);
-					tempString = sourceFile.substr(0,found); // tempString has the directory name
+
 	//				std::string s = std::to_string(myTags.track);
 	//				auto s = std::to_string(42);
 
@@ -597,7 +624,9 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 					}
 					destinationFileName.append(ibuffer);
 					destinationFileName.append(" ");
-					destinationFileName.append( myTags.title );
+					fileName = myTags.title;
+					removeForbiddenFileNameChar(&fileName);
+					destinationFileName.append( fileName );
 					destinationFileName.append(".mp3");
 
 					cout << "destinationFileName: " << destinationFileName << endl;
@@ -626,6 +655,10 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 					ArtistName = tempString.substr(found+1);
 					tempString = tempString.substr(0,found);
 					;*/
+					removeForbiddenFileNameChar(&ArtistName);
+					removeForbiddenFileNameChar(&AlbumName);
+					removeForbiddenFileNameChar(&fileName);
+
 					destinationFileName = destinationDir + ArtistName + "/" + AlbumName + "/" + fileName;
 
 	//				cout << "destinationFileName: " << destinationFileName << endl;
@@ -668,11 +701,6 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 			}
 		}
 
-	}
-	if (myLog.numberOfErrors > 0)
-	{
-		message = "There were Errors ";
-		myLog.print(logWarning, message);
 	}
 }
 
@@ -746,18 +774,24 @@ int checkForTagErrors(audioTags *mp3Tags, string mp3File)
 		mp3Tags->album = AlbumName; // Set album name to folder name
 		mp3Tags->set(mp3File.c_str());
 //		returnValue = 1;
-		message = "No Album Information ";
+		message = "No Album Information. Setting Album name to its Folder Name: ";
+		message.append("'");
+		message.append(AlbumName);
+		message.append("' ");
 		message.append(mp3File);
-		myLog.print(logError, message);
+		myLog.print(logWarning, message);
 	}
 	if (mp3Tags->artist.length() == 0)
 	{
 		mp3Tags->artist = ArtistName; // Set Artist name to folder name
 		mp3Tags->set(mp3File.c_str());
 //		returnValue = 1;
-		message = "No Artist Information ";
+		message = "No Artist Information. Setting Artist name to its Folder Name: ";
+		message.append("'");
+		message.append(ArtistName);
+		message.append("' ");
 		message.append(mp3File);
-		myLog.print(logError, message);
+		myLog.print(logWarning, message);
 	}
 	return(returnValue);
 }

@@ -76,7 +76,8 @@ int audioTags::get(const char *fileName)
 	string albumImageName;
 	string message;
 
-
+	TagLib::String TagLibArtist;
+	TagLib::String TagLibAlbum;
 	TagLib::String TagLibComposers;
 	TagLib::ID3v2::FrameList lstID3v2;
 
@@ -85,6 +86,7 @@ int audioTags::get(const char *fileName)
 	sourceFile = fileName;
 	location = fileName;
 //	cout << "audioTags: get fileName: "  << fileName << endl;
+
 	if(!f.isNull() && f.tag())
 	{
 
@@ -97,17 +99,9 @@ int audioTags::get(const char *fileName)
 		track = tag->track();
 		genre = tag->genre().toCString();
 		location = fileName;
-#ifdef JON		//this creates the image file. No longer needed at this stage.
-		found = sourceFile.find_last_of("/\\"); // Get the folder name that the file resides in
-		directoryName = sourceFile.substr(0,found+1);
-		albumImageName = directoryName + "cover.jpg";
-		if(myCoverImageFile.exist(albumImageName.c_str()) == 0)
-		{
-			getImage(fileName, albumImageName.c_str());
-//			cout <<"Writing Album cover for "  << albumImageName << endl;
-		}
-#endif
+
 	}
+
 	if(!f.isNull() && f.audioProperties())
 	{
 		TagLib::AudioProperties *properties = f.audioProperties();
@@ -117,9 +111,33 @@ int audioTags::get(const char *fileName)
 		length = properties->length();
 	}
 
+
+
 	TagLib::MPEG::File mpegFile(fileName, true);
+#ifdef JON
+	const TagLib::ID3v2::Latin1StringHandler *stringHandler;
+	stringHandler = mpegFile.ID3v2Tag(true)->latin1StringHandler();
 
+//	mpegFile.ID3v2Tag(true)->setLatin1StringHandler(stringHandler);
 
+	TagLibAlbum = mpegFile.ID3v2Tag(true)->album();
+string temp;
+	TagLibArtist = mpegFile.ID3v2Tag(true)->artist();
+	if (TagLibArtist.isLatin1())
+	{
+		cout << "TagLibArtist is latin"  << endl;
+	}
+	else
+	{
+		cout << "TagLibArtist is NOT latin"   << endl;
+	}
+	cout << "TagLibAlbum: " << TagLibAlbum  << endl;
+	cout << "TagLibArtist: " << TagLibArtist  << endl;
+	cout << "TagLibArtist.to8Bit: " << TagLibArtist.to8Bit()  << endl;
+	cout << "TagLibArtist.toCString: " << TagLibArtist.toCString()  << endl;
+	cout << "TagLibArtist.toCWString: " << TagLibArtist.toCWString()  << endl;
+#endif
+	location = fileName;
 	// Disk.
 	lstID3v2 = mpegFile.ID3v2Tag()->frameListMap()["TPOS"];
 	if (!lstID3v2.isEmpty())
