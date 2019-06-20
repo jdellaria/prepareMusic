@@ -632,14 +632,19 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 					cout << "destinationFileName: " << destinationFileName << endl;
 					myFile.rename(sourceFile.c_str(), destinationFileName.c_str() );
 
+					if (myTags.albumArtists.length() > 0)
+					{
+						ArtistName = myTags.albumArtists;
+					}
+					else if (myTags.artist.length() > 0)
+					{
+						ArtistName = myTags.artist;
+					}
 					if (myTags.album.length() > 0)
 					{
 						AlbumName = myTags.album;
 					}
-					if (myTags.artist.length() > 0)
-					{
-						ArtistName = myTags.artist;
-					}
+
 
 					sourceFile = destinationFileName;
 
