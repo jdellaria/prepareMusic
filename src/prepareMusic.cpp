@@ -173,12 +173,12 @@ int main(int argc, char *argv[])
 /*
 	    myTags.get("/home/jdellaria/Desktop/Album Music/Original/Ali Farka Touré & Toumani Diabeté/In The Heart Of The Moon/01 Debe.mp3");
 	    std::cout << "myTags.track: " << myTags.track << '\n';
-	    std::cout << "myTags.album: " << myTags.artist << '\n';
+	    std::cout << "myTags.artist: " << myTags.artist << '\n';
 	    std::cout << "myTags.album: " << myTags.album << '\n';
 */
 //	    checkForTagErrors(myTags, "/home/jdellaria/Desktop/New Albums/Original/Jeff Beck - Discography (1965-2009) 320kbps/Jeff Beck Group/1967-1971 - BBC Radio 1 Sessions/09 Got The Feeling.mp3");
 
-//#ifdef JON
+
 	    switch(myAction)
 	    {
     		case ACTION_STAGE:
@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
 
 	    		break;
 	    }
-//#endif
+
 		message = "There were ";
 		sprintf(intbuffer,"%d", myLog.numberOfErrors);
 		message.append(intbuffer);

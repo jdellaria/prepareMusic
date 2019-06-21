@@ -85,19 +85,23 @@ int audioTags::get(const char *fileName)
 
 	sourceFile = fileName;
 	location = fileName;
-//	cout << "audioTags: get fileName: "  << fileName << endl;
 
+	if(f.isNull())
+	{
+		cout << "File does not exist" <<  endl;
+		return 0;
+	}
 	if(!f.isNull() && f.tag())
 	{
 
 		TagLib::Tag *tag = f.tag();
 
-		title = tag->title().toCString();
-		artist = tag->artist().toCString();
-		album = tag->album().toCString();
+		title = tag->title().toCString(true);
+		artist = tag->artist().toCString(true);
+		album = tag->album().toCString(true);
 		year = tag->year();
 		track = tag->track();
-		genre = tag->genre().toCString();
+		genre = tag->genre().toCString(true);
 		location = fileName;
 
 	}
@@ -114,29 +118,7 @@ int audioTags::get(const char *fileName)
 
 
 	TagLib::MPEG::File mpegFile(fileName, true);
-#ifdef JON
-	const TagLib::ID3v2::Latin1StringHandler *stringHandler;
-	stringHandler = mpegFile.ID3v2Tag(true)->latin1StringHandler();
 
-//	mpegFile.ID3v2Tag(true)->setLatin1StringHandler(stringHandler);
-
-	TagLibAlbum = mpegFile.ID3v2Tag(true)->album();
-string temp;
-	TagLibArtist = mpegFile.ID3v2Tag(true)->artist();
-	if (TagLibArtist.isLatin1())
-	{
-		cout << "TagLibArtist is latin"  << endl;
-	}
-	else
-	{
-		cout << "TagLibArtist is NOT latin"   << endl;
-	}
-	cout << "TagLibAlbum: " << TagLibAlbum  << endl;
-	cout << "TagLibArtist: " << TagLibArtist  << endl;
-	cout << "TagLibArtist.to8Bit: " << TagLibArtist.to8Bit()  << endl;
-	cout << "TagLibArtist.toCString: " << TagLibArtist.toCString()  << endl;
-	cout << "TagLibArtist.toCWString: " << TagLibArtist.toCWString()  << endl;
-#endif
 	location = fileName;
 	// Disk.
 	lstID3v2 = mpegFile.ID3v2Tag()->frameListMap()["TPOS"];
@@ -150,30 +132,22 @@ string temp;
 					}
 					TagLibComposers += (*it)->toString();
 			}
-//		composers = TagLibComposers.toCString();
-//  		cout << "disk is: " << TagLibComposers  << endl;
 
-//  	    std::string input = "100/123/42";
-  	    std::istringstream ss(TagLibComposers.toCString());
+  	    std::istringstream ss(TagLibComposers.toCString(true));
   	    std::string token;
   	    int x = 1;
   	    while(std::getline(ss, token, '/'))
   	    {
   	    	if (x == 1)
   	    	{
-  //	    	    const char *str = "12345";
-  //	    	    int x;
   	    	    sscanf(token.c_str(), "%d", &disk); // disk
- // 	    	  std::cout << " disk: " << token << '\n';
   	    	}
   	    	if (x == 2)
   	    	{
   	    	    sscanf(token.c_str(), "%d", &diskcount);  //diskcount
- // 	    		std::cout << " of: " << token << '\n';
   	    	}
   	    	x++;
   	    }
-//  	  std::cout <<"disk:"<< disk << " of " << diskcount << '\n';
 	}
 
     // Composer.
@@ -185,8 +159,7 @@ string temp;
             }
             TagLibComposers += (*it)->toString();
         }
-   		composers = TagLibComposers.toCString();
- //  		cout << "composers is: " << composers  << endl;
+   		composers = TagLibComposers.toCString(true);
     }
 
     // Album Artist.
@@ -198,10 +171,9 @@ string temp;
             }
             TagLibAlbumArtists += (*it)->toString();
         }
-        albumArtists = TagLibAlbumArtists.toCString();
- //       cout << "albumArtists: " << albumArtists  << endl;
+        albumArtists = TagLibAlbumArtists.toCString(true);
     }
-	return 0;
+	return 1;
 }
 
 
