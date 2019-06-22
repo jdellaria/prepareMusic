@@ -84,7 +84,7 @@ int audioTags::get(const char *fileName)
 	TagLib::String TagLibAlbumArtists;
 
 	sourceFile = fileName;
-	location = fileName;
+	location.utf8 = fileName;
 
 	if(f.isNull())
 	{
@@ -96,13 +96,18 @@ int audioTags::get(const char *fileName)
 
 		TagLib::Tag *tag = f.tag();
 
-		title = tag->title().toCString(true);
-		artist = tag->artist().toCString(true);
-		album = tag->album().toCString(true);
+		title.utf8 = tag->title().toCString(true);
+		title.ascii = tag->title().toCString(false);
+		artist.utf8 = tag->artist().toCString(true);
+		artist.ascii = tag->artist().toCString(false);
+		album.utf8 = tag->album().toCString(true);
+		album.ascii = tag->album().toCString(false);
 		year = tag->year();
 		track = tag->track();
-		genre = tag->genre().toCString(true);
-		location = fileName;
+		genre.utf8 = tag->genre().toCString(true);
+		genre.ascii = tag->genre().toCString(false);
+		location.utf8 = fileName;
+		location.ascii = fileName;
 
 	}
 
@@ -119,7 +124,7 @@ int audioTags::get(const char *fileName)
 
 	TagLib::MPEG::File mpegFile(fileName, true);
 
-	location = fileName;
+	location.utf8 = fileName;
 	// Disk.
 	lstID3v2 = mpegFile.ID3v2Tag()->frameListMap()["TPOS"];
 	if (!lstID3v2.isEmpty())
@@ -159,7 +164,8 @@ int audioTags::get(const char *fileName)
             }
             TagLibComposers += (*it)->toString();
         }
-   		composers = TagLibComposers.toCString(true);
+   		composers.utf8 = TagLibComposers.toCString(true);
+   		composers.ascii = TagLibComposers.toCString(false);
     }
 
     // Album Artist.
@@ -171,7 +177,8 @@ int audioTags::get(const char *fileName)
             }
             TagLibAlbumArtists += (*it)->toString();
         }
-        albumArtists = TagLibAlbumArtists.toCString(true);
+        albumArtists.utf8 = TagLibAlbumArtists.toCString(true);
+        albumArtists.ascii = TagLibAlbumArtists.toCString(false);
     }
 	return 1;
 }
@@ -188,12 +195,12 @@ int audioTags::set(const char *fileName)
 
 		TagLib::Tag *tag = f.tag();
 
-		tag->setTitle(title);
-		tag->setArtist(artist);
-		tag->setAlbum(album);
+		tag->setTitle(title.utf8);
+		tag->setArtist(artist.utf8);
+		tag->setAlbum(album.utf8);
 		tag->setYear(year);
 		tag->setTrack(track);
-		tag->setGenre(genre);
+		tag->setGenre(genre.utf8);
 		tag->setComment("");
 		f.save();
 	}

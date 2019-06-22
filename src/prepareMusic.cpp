@@ -529,8 +529,8 @@ void doForceArtistAlbumName(char const * directoyEntry, int directoyEntryType)
 				cout << "ArtistName: " << ArtistName << endl;
 
 				myTags.get((char*)sourceFile.c_str());
-				myTags.album = AlbumName;
-				myTags.artist = ArtistName;
+				myTags.album.utf8 = AlbumName;
+				myTags.artist.utf8 = ArtistName;
 				myTags.set((char*)sourceFile.c_str());
 			}
 		}
@@ -624,7 +624,7 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 					}
 					destinationFileName.append(ibuffer);
 					destinationFileName.append(" ");
-					fileName = myTags.title;
+					fileName = myTags.title.utf8;
 					removeForbiddenFileNameChar(&fileName);
 					destinationFileName.append( fileName );
 					destinationFileName.append(".mp3");
@@ -632,17 +632,17 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 					cout << "destinationFileName: " << destinationFileName << endl;
 					myFile.rename(sourceFile.c_str(), destinationFileName.c_str() );
 
-					if (myTags.albumArtists.length() > 0)
+					if (myTags.albumArtists.utf8.length() > 0)
 					{
-						ArtistName = myTags.albumArtists;
+						ArtistName = myTags.albumArtists.utf8;
 					}
-					else if (myTags.artist.length() > 0)
+					else if (myTags.artist.utf8.length() > 0)
 					{
-						ArtistName = myTags.artist;
+						ArtistName = myTags.artist.utf8;
 					}
-					if (myTags.album.length() > 0)
+					if (myTags.album.utf8.length() > 0)
 					{
-						AlbumName = myTags.album;
+						AlbumName = myTags.album.utf8;
 					}
 
 
@@ -767,16 +767,16 @@ int checkForTagErrors(audioTags *mp3Tags, string mp3File)
 		message.append(mp3File);
 		myLog.print(logError, message);
 	}
-	if (mp3Tags->title.length() == 0)
+	if (mp3Tags->title.utf8.length() == 0)
 	{
 		returnValue = 1;
 		message = "No Title Information ";
 		message.append(mp3File);
 		myLog.print(logError, message);
 	}
-	if (mp3Tags->album.length() == 0)
+	if (mp3Tags->album.utf8.length() == 0)
 	{
-		mp3Tags->album = AlbumName; // Set album name to folder name
+		mp3Tags->album.utf8 = AlbumName; // Set album name to folder name
 		mp3Tags->set(mp3File.c_str());
 //		returnValue = 1;
 		message = "No Album Information. Setting Album name to its Folder Name: ";
@@ -786,9 +786,9 @@ int checkForTagErrors(audioTags *mp3Tags, string mp3File)
 		message.append(mp3File);
 		myLog.print(logWarning, message);
 	}
-	if (mp3Tags->artist.length() == 0)
+	if (mp3Tags->artist.utf8.length() == 0)
 	{
-		mp3Tags->artist = ArtistName; // Set Artist name to folder name
+		mp3Tags->artist.utf8 = ArtistName; // Set Artist name to folder name
 		mp3Tags->set(mp3File.c_str());
 //		returnValue = 1;
 		message = "No Artist Information. Setting Artist name to its Folder Name: ";
@@ -892,12 +892,12 @@ void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType)
 			if (isMP3((char* const)sourceFile.c_str()))
 			{
 				myTags.get((char*)sourceFile.c_str());
-				myDB.setAlbum(myTags.album);
-				myDB.setArtist(myTags.artist);
-				myDB.setComposer(myTags.composers);
-				myDB.setAlbumArtists(myTags.albumArtists);
-				myDB.setSongName(myTags.title);
-				myDB.setGenre(myTags.genre);
+				myDB.setAlbum(myTags.album.ascii);
+				myDB.setArtist(myTags.artist.ascii);
+				myDB.setComposer(myTags.composers.ascii);
+				myDB.setAlbumArtists(myTags.albumArtists.ascii);
+				myDB.setSongName(myTags.title.ascii);
+				myDB.setGenre(myTags.genre.ascii);
 				myDB.setTrackNumber(myTags.track);
 				myDB.setSongYear(myTags.year);
 				myDB.setBitRate(myTags.bitrate);
