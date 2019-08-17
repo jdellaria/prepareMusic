@@ -282,11 +282,19 @@ int mainRemoveForbiddenCharacters()
 static char ClearForbidden(char toCheck)
 {
 	const std::string forbiddenChars = "\\/:?\"<>|";
-    if(forbiddenChars.find(toCheck) != string::npos)
+
+	const std::string allowedChars = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ()[]_-";
+
+    if(allowedChars.find(toCheck) == string::npos)
     {
          return '_';
     }
 
+/*    if(forbiddenChars.find(toCheck) != string::npos)
+    {
+         return '_';
+    }
+*/
     return toCheck;
 }
 
