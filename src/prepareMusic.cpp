@@ -283,7 +283,7 @@ static char ClearForbidden(char toCheck)
 {
 	const std::string forbiddenChars = "\\/:?\"<>|";
 
-	const std::string allowedChars = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ()[]_-";
+	const std::string allowedChars = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ()[]_-.";
 
     if(allowedChars.find(toCheck) == string::npos)
     {
