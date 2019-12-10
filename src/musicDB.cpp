@@ -169,6 +169,11 @@ void musicDB::setLocation(char* where)
 	int i = 0;
 	std::vector< unsigned char > g;
 
+	if (length > 254)
+		where[254] = 0;
+	sprintf(location, "%s", where);
+
+#ifdef JON
 //This next section checks to see if we are give a UTF8 character (today we only handle C3). If it is, we then remove the C3 character and adjust the following character to the Windows 1252 character set.
 	for (i=0; where[i]; i++) g.push_back(where[i]);
 	for(i = 0;i < length;i++)
@@ -186,7 +191,7 @@ void musicDB::setLocation(char* where)
 		j++;
 	}
 	location[j] = 0;
-
+#endif
 }
 
 void musicDB::setThumbLocation(char* where)
@@ -196,7 +201,11 @@ void musicDB::setThumbLocation(char* where)
 	int j = 0;
 	int i = 0;
 	std::vector< unsigned char > g;
+	if (length > 254)
+		where[254] = 0;
+	sprintf(thumblocation, "%s", where);
 
+#ifdef JON
 //This next section checks to see if we are give a UTF8 character (today we only handle C3). If it is, we then remove the C3 character and adjust the following character to the Windows 1252 character set.
 	for (i=0; where[i]; i++) g.push_back(where[i]);
 	for(i = 0;i < length;i++)
@@ -214,7 +223,7 @@ void musicDB::setThumbLocation(char* where)
 		j++;
 	}
 	thumblocation[j] = 0;
-
+#endif
 }
 
 
@@ -238,6 +247,13 @@ MYSQL musicDB::OpenConnection()
 		printf("Failed to connect to database: Error: %s\n", mysql_error(&dbaseConnection));
 		return(dbaseConnection);
 	}
+
+	if (!mysql_set_character_set(&dbaseConnection, "utf8"))
+	{
+
+		printf("New client character set: %s\n",
+		mysql_character_set_name(&dbaseConnection));
+	}
 	return (dbaseConnection);
 }
 
@@ -256,11 +272,19 @@ long musicDB::addAlbum()	//album must be set before calling function
 	MYSQL_RES *queryResult;
 	MYSQL_ROW row;
 	int nrows;
+	int length;
 
 //	strcpy (tempAlbum,album);
 //	normalizeString(tempAlbum, 149);
-	mysql_real_escape_string(&dbaseConnection, tempAlbum, album.c_str(), album.length());
-	mysql_real_escape_string(&dbaseConnection, tempArtist, artist.c_str(), artist.length());
+	length = album.length();
+	if (length > 254)
+		length = 254;
+
+	mysql_real_escape_string(&dbaseConnection, tempAlbum, album.c_str(), length);
+	length = artist.length();
+	if (length > 254)
+		length = 254;
+	mysql_real_escape_string(&dbaseConnection, tempArtist, artist.c_str(), length);
 
 	sprintf(SQLStmt, "INSERT into Music.Albums (Album, refId, ArtistName, SongYear) values (TRIM('%s'),9998877,TRIM('%s'),%d);", tempAlbum, tempArtist, songYear); // this adds a new album with a unique ID (9998877) so that we can retrieve the albumID next
 	if (mysql_query(&dbaseConnection, SQLStmt))
@@ -318,14 +342,14 @@ long musicDB::updateAlbumCover()	//album must be set before calling function
 long musicDB::addArtist()	//artist must be set before calling function
 {
 	char SQLStmt[1000];
-	char tempArtist[256];
+	char tempArtist[150];
 	int length;
 
 //	strcpy (tempArtist,artist);
 //	normalizeString(tempArtist, 149);
 	length = artist.length();
-	if (length > 254)
-		length = 254;
+	if (length > 149) // Lenght of Arist in DB is 150
+		length = 149;
 	mysql_real_escape_string(&dbaseConnection, tempArtist, artist.c_str(), length);
 	artistId = getArtistID();
 	if (artistId > 0)
@@ -393,6 +417,7 @@ long musicDB::addSongToPreSongLibrary()
 //	albumId = addAlbum();
 //	artistId = addArtist();
 //	cout << "musicDB::addSongToPreSongLibrary"  << endl;
+
 	length = name.length();
 	if (length > 254)
 		length = 254;
@@ -477,12 +502,14 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 	MYSQL_BIND  bind[3];
 	MYSQL_STMT  *stmt;
 //	cout << "musicDB::addSongWithTimes"  << endl;
+
 	stmt = mysql_stmt_init(&dbaseConnection);
 	if (!stmt)
 	{
 		fprintf(stderr, " mysql_stmt_init(), out of memory\n");
 		return(0);
 	}
+
 //	cout << "musicDB::addSongWithTimes mysql_stmt_prepare" << SQLStmt << endl;
 	if (mysql_stmt_prepare( stmt, SQLStmt, strlen(SQLStmt)))
 	{
@@ -515,7 +542,7 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 		fprintf(stderr, " %s: %s\n", location, mysql_stmt_error(stmt));
 		return(0);
 	}
-
+//	cout << "musicDB::addSongWithTimes stmt: "  << stmt << endl;
 	/* Close the statement */
 	if (mysql_stmt_close(stmt))
 	{

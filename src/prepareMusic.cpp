@@ -533,9 +533,6 @@ void doForceArtistAlbumName(char const * directoyEntry, int directoyEntryType)
 				found = tempString.find_last_of("/\\");
 				ArtistName = tempString.substr(found+1);
 				tempString = tempString.substr(0,found);
-				cout << "AlbumName: " << AlbumName << endl;
-				cout << "ArtistName: " << ArtistName << endl;
-
 				myTags.get((char*)sourceFile.c_str());
 				myTags.album.utf8 = AlbumName;
 				myTags.artist.utf8 = ArtistName;
@@ -637,7 +634,7 @@ void doCreatFileNameFolderStructure(char const * directoyEntry, int directoyEntr
 					destinationFileName.append( fileName );
 					destinationFileName.append(".mp3");
 
-					cout << "destinationFileName: " << destinationFileName << endl;
+//					cout << "destinationFileName: " << destinationFileName << endl;
 					myFile.rename(sourceFile.c_str(), destinationFileName.c_str() );
 
 					if (myTags.albumArtists.utf8.length() > 0)
@@ -854,8 +851,8 @@ void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType)
 		tempString = tempString.substr(0,found);
 		destinationFileName = destinationDir + ArtistName + "/" + AlbumName + "/" + fileName;
 
-//		cout << "Artist: " << ArtistName << " - Album: " << AlbumName << endl;
-//		printf("%s\n%s\n\n", directoyEntry,destinationFileName.c_str());
+		cout << "Artist: " << ArtistName << " - Album: " << AlbumName << endl;
+		printf("%s\n%s\n\n", directoyEntry,destinationFileName.c_str());
 
 		message.clear();
 		message.append(directoyEntry);
@@ -900,12 +897,15 @@ void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType)
 			if (isMP3((char* const)sourceFile.c_str()))
 			{
 				myTags.get((char*)sourceFile.c_str());
-				myDB.setAlbum(myTags.album.ascii);
+				cout << "myTags.get - myTags.artist.utf8: " << myTags.artist.utf8  << endl;
+				cout << "myTags.get - myTags.artist.ascii: " << myTags.artist.ascii  << endl;
+				myDB.setAlbum(myTags.album.ascii);  //JON
 				myDB.setArtist(myTags.artist.ascii);
 				myDB.setComposer(myTags.composers.ascii);
 				myDB.setAlbumArtists(myTags.albumArtists.ascii);
 				myDB.setSongName(myTags.title.ascii);
 				myDB.setGenre(myTags.genre.ascii);
+
 				myDB.setTrackNumber(myTags.track);
 				myDB.setSongYear(myTags.year);
 				myDB.setBitRate(myTags.bitrate);
@@ -923,19 +923,25 @@ void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType)
 					newAlbum = 0;
 					lAlbum = myDB.addAlbum();
 					sprintf(albumIDString, "%ld", lAlbum);
+
 					jpgThumbName = destinationDir + ArtistName + "/" + AlbumName + "/" + albumIDString + ".w300.thumb";
 					myDB.setThumbLocation ((char*)jpgThumbName.c_str());
 					myDB.setAlbumId(lAlbum);
 					myDB.updateAlbumCover();
 					lArtist = myDB.addArtist();
 					myDB.setArtistId(lArtist);
-		//			cout << "updateAlbumCover: " << jpgThumbName  << endl;
+					cout << "updateAlbumCover: " << jpgThumbName  << endl;
 				}
 
 
 				myDB.setAlbumId(lAlbum);
 				myDB.setArtistId(lArtist);
-				myDB.addSongToPreSongLibrary();
+				if (myDB.addSongToPreSongLibrary() == 0)
+				{
+					message = "myDB.addSongToPreSongLibrary(): ";
+					message.append(myDB.location);
+					myLog.print(logError, message);
+				}
 
 //				addSongToDB((char* const)destinationFileName.c_str(), (char* const)jpgThumbName.c_str(), (char* const)"Album");
 
@@ -1074,4 +1080,3 @@ int configApp()
 
 	return (1);
 }
-

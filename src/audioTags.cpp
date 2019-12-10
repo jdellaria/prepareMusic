@@ -183,7 +183,7 @@ int audioTags::get(const char *fileName)
 	return 1;
 }
 
-
+#ifdef JON
 int audioTags::set(const char *fileName)
 {
 
@@ -198,6 +198,38 @@ int audioTags::set(const char *fileName)
 		tag->setTitle(title.utf8);
 		tag->setArtist(artist.utf8);
 		tag->setAlbum(album.utf8);
+		tag->setYear(year);
+		tag->setTrack(track);
+		tag->setGenre(genre.utf8);
+		tag->setComment("");
+		f.save();
+	}
+	return 0;
+}
+#endif
+
+int audioTags::set(const char *fileName)
+{
+
+	TagLib::FileRef f(fileName);
+
+	TagLib::String TagLibArtist = artist.utf8;
+	TagLib::String TagLibAlbum = album.utf8;
+	TagLib::String TagLibSongName = title.utf8;
+
+//	cout << "id3v2Tags: set fileName: "  << fileName << endl;
+	if(!f.isNull() && f.tag())
+	{
+
+		TagLib::Tag *tag = f.tag();
+//		TagLibArtist.String(artist.utf8,TagLib::String::UTF8);
+//		TagLibAlbum.String(album.utf8);
+//		TagLibSongName.String(title.utf8);
+//		tag->setTitle(TagLibSongName.toCString(true));
+		tag->setTitle(TagLibSongName.data(TagLib::String::Latin1));
+		tag->setArtist(TagLibArtist.data(TagLib::String::Latin1));
+//		tag->setArtist(TagLibArtist.toCString(false));
+		tag->setAlbum(TagLibAlbum.data(TagLib::String::Latin1));
 		tag->setYear(year);
 		tag->setTrack(track);
 		tag->setGenre(genre.utf8);
