@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <string>
+#include <DLog.h>
 
 #define         MASKBITS                0x3F
 #define         MASKBYTE                0x80
@@ -36,6 +37,7 @@ typedef unsigned int     Unicode4Bytes;
 typedef unsigned char    byte;
 
 using namespace std;
+extern DLog myLog;
 
 musicDB::musicDB()
 {
@@ -231,6 +233,7 @@ void musicDB::setThumbLocation(char* where)
 MYSQL musicDB::OpenConnection()
 {
 	int	err = 0;
+	string message;
 	/* now to connect to the database */
 
 	if(mysql_init(&dbaseConnection) == NULL)
@@ -244,15 +247,16 @@ MYSQL musicDB::OpenConnection()
 	}
 	if(err)
 	{
-		printf("Failed to connect to database: Error: %s\n", mysql_error(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ <<": Failed to connect to database: " << mysql_error(&dbaseConnection) << DLogError;
 		return(dbaseConnection);
 	}
 
-	if (!mysql_set_character_set(&dbaseConnection, "utf8"))
+	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
 	{
 
 		printf("New client character set: %s\n",
 		mysql_character_set_name(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
 	}
 	return (dbaseConnection);
 }
@@ -291,6 +295,7 @@ long musicDB::addAlbum()	//album must be set before calling function
 	{
 		fprintf(stderr, " addAlbum\n");
 		fprintf(stderr, " %s: %s\n", location, mysql_error(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << ": " << location << ": "<< mysql_error(&dbaseConnection) << DLogError;
 		return(0);
 	}
 
@@ -299,6 +304,7 @@ long musicDB::addAlbum()	//album must be set before calling function
 	{
 		fprintf(stderr, " addAlbum getting Album ID\n");
 		fprintf(stderr, " %s: %s\n", location, mysql_error(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << ": addAlbum getting Album ID: " << location << ": "<< mysql_error(&dbaseConnection) << DLogError;
 		return(0);
 	}
 	queryResult = mysql_store_result(&dbaseConnection);
@@ -313,6 +319,8 @@ long musicDB::addAlbum()	//album must be set before calling function
 	{
 		fprintf(stderr, " addAlbum updating refId\n");
 		fprintf(stderr, " %s: %s\n", location, mysql_error(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << ":  addAlbum updating refId: " << location << ": "<< mysql_error(&dbaseConnection) << DLogError;
+
 		return(0);
 	}
 
@@ -507,6 +515,8 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 	if (!stmt)
 	{
 		fprintf(stderr, " mysql_stmt_init(), out of memory\n");
+		myLog << "MusicDB.cpp " << __func__ << ":  mysql_stmt_init(), out of memory: " << DLogError;
+
 		return(0);
 	}
 
@@ -515,6 +525,7 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 	{
 		fprintf(stderr, "\n mysql_stmt_prepare(), INSERT failed");
 		fprintf(stderr, " %s: %s\n", location, mysql_stmt_error(stmt));
+		myLog << "MusicDB.cpp " << __func__ <<": mysql_stmt_prepare(), INSERT failed: " << location << ": "<< mysql_stmt_error(stmt) << DLogError;
 		return(0);
 	}
 
@@ -540,6 +551,8 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 //		cout << "musicDB::addSongWithTimes error 1"  << endl;
 		fprintf(stderr, " mysql_stmt_execute(), 1 failed\n");
 		fprintf(stderr, " %s: %s\n", location, mysql_stmt_error(stmt));
+		myLog << "MusicDB.cpp " << __func__ <<":  mysql_stmt_execute(), 1 failed: " << location << ": "<< mysql_stmt_error(stmt) << " stmt: " << stmt << DLogError;
+
 		return(0);
 	}
 //	cout << "musicDB::addSongWithTimes stmt: "  << stmt << endl;
@@ -549,6 +562,7 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 //		cout << "musicDB::addSongWithTimes eooro 2"  << endl;
 		fprintf(stderr, " failed while closing the statement\n");
 		fprintf(stderr, " %s: %s\n", location, mysql_stmt_error(stmt));
+		myLog << "MusicDB.cpp " << __func__ <<":  failed while closing the statement: " << location << ": " << mysql_stmt_error(stmt) << DLogError;
 		return(0);
 	}
 //	cout << "musicDB::addSongWithTimes reutnred success"  << endl;
