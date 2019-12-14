@@ -251,13 +251,13 @@ MYSQL musicDB::OpenConnection()
 		return(dbaseConnection);
 	}
 
-	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
+/*	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
 	{
 
 		printf("New client character set: %s\n",
 		mysql_character_set_name(&dbaseConnection));
 		myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
-	}
+	}*/
 	return (dbaseConnection);
 }
 
