@@ -899,12 +899,12 @@ void doLoadAlbumsToDatabase(char const * directoyEntry, int directoyEntryType)
 				myTags.get((char*)sourceFile.c_str());
 				cout << "myTags.get - myTags.artist.utf8: " << myTags.artist.utf8  << endl;
 				cout << "myTags.get - myTags.artist.ascii: " << myTags.artist.ascii  << endl;
-				myDB.setAlbum(myTags.album.ascii);  //JON
-				myDB.setArtist(myTags.artist.ascii);
-				myDB.setComposer(myTags.composers.ascii);
-				myDB.setAlbumArtists(myTags.albumArtists.ascii);
-				myDB.setSongName(myTags.title.ascii);
-				myDB.setGenre(myTags.genre.ascii);
+				myDB.setAlbum(myTags.album.utf8);  //JON
+				myDB.setArtist(myTags.artist.utf8);
+				myDB.setComposer(myTags.composers.utf8);
+				myDB.setAlbumArtists(myTags.albumArtists.utf8);
+				myDB.setSongName(myTags.title.utf8);
+				myDB.setGenre(myTags.genre.utf8);
 
 				myDB.setTrackNumber(myTags.track);
 				myDB.setSongYear(myTags.year);

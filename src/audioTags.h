@@ -38,6 +38,8 @@ public:
 	int get(const char *  fileName);
 	void getImage(const char * mp3FileName, const char * imageFileName);
 	int set(const char *fileName);
+	int isExtendedASCII(wstring ws);
+	string convertWStringToString(wstring ws);
 };
 
 

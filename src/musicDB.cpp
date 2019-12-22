@@ -251,13 +251,13 @@ MYSQL musicDB::OpenConnection()
 		return(dbaseConnection);
 	}
 
-/*	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
+	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
 	{
 
 		printf("New client character set: %s\n",
 		mysql_character_set_name(&dbaseConnection));
 		myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
-	}*/
+	}
 	return (dbaseConnection);
 }
 
@@ -289,6 +289,14 @@ long musicDB::addAlbum()	//album must be set before calling function
 	if (length > 254)
 		length = 254;
 	mysql_real_escape_string(&dbaseConnection, tempArtist, artist.c_str(), length);
+
+	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
+	{
+
+		printf("New client character set: %s\n",
+		mysql_character_set_name(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
+	}
 
 	sprintf(SQLStmt, "INSERT into Music.Albums (Album, refId, ArtistName, SongYear) values (TRIM('%s'),9998877,TRIM('%s'),%d);", tempAlbum, tempArtist, songYear); // this adds a new album with a unique ID (9998877) so that we can retrieve the albumID next
 	if (mysql_query(&dbaseConnection, SQLStmt))
@@ -364,6 +372,16 @@ long musicDB::addArtist()	//artist must be set before calling function
 	{
 		return(artistId);
 	}
+
+	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
+	{
+
+		printf("New client character set: %s\n",
+		mysql_character_set_name(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
+	}
+
+
 	sprintf(SQLStmt, "INSERT into Music.Artists (Artist) values (TRIM('%s'));", tempArtist);
 	if (mysql_query(&dbaseConnection, SQLStmt))
 	{
@@ -544,6 +562,13 @@ long  musicDB::addSongWithTimes( char * SQLStmt, MYSQL_TIME* dateModified, MYSQL
 
 	mysql_stmt_bind_param(stmt, bind);
 
+	if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
+	{
+
+		printf("New client character set: %s\n",
+		mysql_character_set_name(&dbaseConnection));
+		myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
+	}
 //	cout << "musicDB::addSongWithTimes mysql_stmt_execute" << stmt << endl;
 	/* Execute the INSERT statement - 1*/
 	if (mysql_stmt_execute(stmt))
@@ -575,6 +600,16 @@ long musicDB::CommitSongsToLibrary()
 	MYSQL_ROW row;
 	int nrows;
 //	cout << "musicDB::CommitSongsToLibrary"  << endl;
+
+if (!mysql_set_character_set(&dbaseConnection, "utf8mb4"))
+{
+
+	printf("New client character set: %s\n",
+	mysql_character_set_name(&dbaseConnection));
+	myLog << "MusicDB.cpp " << __func__ << "New client character set: " << mysql_character_set_name(&dbaseConnection) << DLogInformation;
+}
+
+
 	sprintf(SQLStmt, "INSERT into Music.songlibrary (Name ,Artist, Composer, AlbumArtists ,Album, Grouping, SongYear, Location, TrackNumber, Genre,  SongTime, BitRate, SampleRate, DateModified, DateAdded, AlbumId, ArtistId, DiscNumber, DiscCount) select Name ,Artist ,Composer, AlbumArtists ,Album, Grouping, SongYear, Location, TrackNumber, Genre,  SongTime, BitRate, SampleRate, DateModified, DateAdded, AlbumId, ArtistId, DiscNumber, DiscCount from Music.presonglibrary");
 	if (mysql_query(&dbaseConnection, SQLStmt))
 	{

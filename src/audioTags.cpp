@@ -75,6 +75,7 @@ int audioTags::get(const char *fileName)
 	string directoryName;
 	string albumImageName;
 	string message;
+	wstring ws;
 
 	TagLib::String TagLibArtist;
 	TagLib::String TagLibAlbum;
@@ -93,15 +94,61 @@ int audioTags::get(const char *fileName)
 	}
 	if(!f.isNull() && f.tag())
 	{
-
 		TagLib::Tag *tag = f.tag();
+		if (tag->title().isAscii() )
+		{
+			title.utf8 = tag->title().toCString(false);
+		}
+		else
+		{
+			ws  = tag->title().toWString();
+			if ( isExtendedASCII(ws) == 1)
+			{
+				title.utf8 = convertWStringToString(ws);
+			}
+			else
+			{
+				title.utf8 = tag->title().toCString(true);
+			}
 
-		title.utf8 = tag->title().toCString(true);
-		title.ascii = tag->title().toCString(false);
-		artist.utf8 = tag->artist().toCString(true);
+		}
+		title.ascii = tag->album().toCString(false);
+		if (tag->artist().isAscii())
+		{
+			artist.utf8 = tag->artist().toCString(false);
+		}
+		else
+		{
+			ws  = tag->artist().toWString();
+			if ( isExtendedASCII(ws) == 1)
+			{
+				  artist.utf8 = convertWStringToString(ws);
+			}
+			else
+			{
+				artist.utf8 = tag->artist().toCString(true);
+			}
+		}
 		artist.ascii = tag->artist().toCString(false);
-		album.utf8 = tag->album().toCString(true);
+
+		if (tag->album().isAscii())
+		{
+			album.utf8 = tag->album().toCString(false);
+		}
+		else
+		{
+			ws  = tag->album().toWString();
+			if ( isExtendedASCII(ws) == 1)
+			{
+				album.utf8 = convertWStringToString(ws);
+			}
+			else
+			{
+				album.utf8 = tag->album().toCString(true);
+			}
+		}
 		album.ascii = tag->album().toCString(false);
+
 		year = tag->year();
 		track = tag->track();
 		genre.utf8 = tag->genre().toCString(true);
@@ -109,6 +156,28 @@ int audioTags::get(const char *fileName)
 		location.utf8 = fileName;
 		location.ascii = fileName;
 
+#ifdef JON
+				cout << "audioTags: tag->title(): "  << tag->title() << endl;
+				cout << "audioTags: tag->title().isAscii() : "  << tag->title().isAscii() << endl;
+				cout << "audioTags: tag->title().isLatin1() : "  << tag->title().isLatin1() << endl;
+				cout << "audioTags: tag->title().toWString(): "  << tag->title().toWString() << endl;
+				cout << "audioTags: tag->title().toCString(true): "  << tag->title().toCString(true) << endl;
+				cout << "audioTags: tag->title().toCWString(): "  << tag->title().toCWString() << endl;
+
+				cout << "audioTags: tag->artist(): "  << tag->artist() << endl;
+				cout << "audioTags: tag->artist().isAscii() : "  << tag->artist().isAscii() << endl;
+				cout << "audioTags: tag->artist().isLatin1() : "  << tag->artist().isLatin1() << endl;
+				cout << "audioTags: tag->artist().toWString(): "  << tag->artist().toWString() << endl;
+				cout << "audioTags: tag->artist().toCString(true): "  << tag->artist().toCString(true) << endl;
+				cout << "audioTags: tag->artist().toCWString(): "  << tag->artist().toCWString() << endl;
+
+				cout << "audioTags: tag->album(): "  << tag->album() << endl;
+				cout << "audioTags: tag->album().isAscii() : "  << tag->album().isAscii() << endl;
+				cout << "audioTags: tag->album().isLatin1() : "  << tag->album().isLatin1() << endl;
+				cout << "audioTags: tag->album().toWString(): "  << tag->album().toWString() << endl;
+				cout << "audioTags: tag->album().toCString(true): "  << tag->album().toCString(true) << endl;
+				cout << "audioTags: tag->album().toCWString(): "  << tag->album().toCWString() << endl;
+#endif
 	}
 
 	if(!f.isNull() && f.audioProperties())
@@ -183,6 +252,30 @@ int audioTags::get(const char *fileName)
 	return 1;
 }
 
+
+string audioTags::convertWStringToString(wstring ws)
+{
+	string result;
+	for(char x : ws)
+	  result += x;
+
+	return(result);
+}
+
+int audioTags::isExtendedASCII(wstring ws)
+{
+	for (int x = 0; x < ws.length(); x++)
+	{
+		if ((ws[x] == 0xc3) )
+			return(1);
+//		putchar(ws[x]);
+//		printf(" %02hhx ", ws[x]);
+//		cout  << endl;
+	}
+	return(0);
+}
+
+
 #ifdef JON
 int audioTags::set(const char *fileName)
 {
@@ -226,10 +319,14 @@ int audioTags::set(const char *fileName)
 //		TagLibAlbum.String(album.utf8);
 //		TagLibSongName.String(title.utf8);
 //		tag->setTitle(TagLibSongName.toCString(true));
-		tag->setTitle(TagLibSongName.data(TagLib::String::Latin1));
-		tag->setArtist(TagLibArtist.data(TagLib::String::Latin1));
+//		tag->setTitle(TagLibSongName.data(TagLib::String::Latin1));
+//		tag->setArtist(TagLibArtist.data(TagLib::String::Latin1));
 //		tag->setArtist(TagLibArtist.toCString(false));
-		tag->setAlbum(TagLibAlbum.data(TagLib::String::Latin1));
+//		tag->setAlbum(TagLibAlbum.data(TagLib::String::Latin1));
+
+		tag->setTitle(title.utf8);
+		tag->setArtist(artist.utf8);
+		tag->setAlbum(album.utf8);
 		tag->setYear(year);
 		tag->setTrack(track);
 		tag->setGenre(genre.utf8);
